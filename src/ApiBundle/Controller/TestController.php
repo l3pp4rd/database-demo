@@ -26,7 +26,6 @@ class TestController extends Controller
         $wallet = $this->repo('AppBundle:Wallet')->findOneById(1);
         $wallet->addAmount(1);
         $this->persist($wallet);
-        $this->flush();
 
         $tx = new Transaction();
         $tx->setWallet($wallet);
