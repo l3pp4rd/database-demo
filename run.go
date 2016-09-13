@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 var concurrency = flag.Int("concurrency", 1, "cuncurrency rate to execute given url")
@@ -12,6 +13,7 @@ var iterations = flag.Int("iterations", 100, "iterations to execute")
 
 func main() {
 	flag.Parse()
+	started := time.Now()
 
 	uri := flag.Arg(0)
 	buffer := make(chan int, *concurrency)
@@ -25,6 +27,7 @@ func main() {
 		buffer <- i
 	}
 	close(buffer)
+	fmt.Println("executed:", *iterations, "requests in:", time.Since(started))
 }
 
 func request(uri string, buffer <-chan int) {
