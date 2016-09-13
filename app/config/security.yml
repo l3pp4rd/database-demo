@@ -25,6 +25,10 @@ security:
       pattern: ^/api/version$
       security: false
 
+    api_test:
+      pattern: ^/api/test
+      security: false
+
     api_auth:
       pattern: ^/api/authenticate$
       stateless: true

@@ -21,5 +21,6 @@ sleep 10
 echo "[info] Migrating database"
 php /var/www/app/console cache:clear
 php /var/www/app/console doctrine:schema:update --force
+php /var/www/app/console app:fixtures
 
 chown -R www:www /var/www

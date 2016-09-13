@@ -3,6 +3,7 @@
 namespace AppBundle\Fixture\Users;
 
 use AppBundle\Entity\User;
+use AppBundle\Entity\Wallet;
 use Doctrine\Common\Persistence\ObjectManager;
 use Faker\Factory;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
@@ -55,6 +56,11 @@ class DevUsers implements FixtureInterface, OrderedFixtureInterface, ContainerAw
             $user->setPassword($encoder->encodePassword('S3cretpassword', $user->getSalt()));
 
             $em->persist($user);
+
+            $wallet = new Wallet();
+            $wallet->setUser($user);
+
+            $em->persist($wallet);
         }
         $em->flush();
     }
