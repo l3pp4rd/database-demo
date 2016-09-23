@@ -44,6 +44,8 @@ class DevUsers implements FixtureInterface, OrderedFixtureInterface, ContainerAw
         $users = [
             'yoda' => ['ROLE_ADMIN'],
             'luke' => ['ROLE_USER'],
+            'chewbacca' => ['ROLE_USER'],
+            'darth-vader' => ['ROLE_USER'],
         ];
         foreach ($users as $username => $roles) {
             $user = new User();

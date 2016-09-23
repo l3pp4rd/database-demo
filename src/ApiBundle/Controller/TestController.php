@@ -24,18 +24,34 @@ class TestController extends Controller
      */
     public function indexAction(Request $request)
     {
+        $wallets = [1, 2, 3, 4];
+
+        $credit = mt_rand(1, 4);
+        $debit = array_values(array_diff($wallets, [$credit]))[mt_rand(0, 2)];
+
         $em = $this->get("doctrine")->getEntityManager();
         $c = $em->getConnection();
         $c->beginTransaction();
         try {
-            $wallet = $em->find('AppBundle:Wallet', 1, LockMode::PESSIMISTIC_WRITE);
-            $wallet->addAmount(1);
-            $this->persist($wallet);
+            $credit = $em->find('AppBundle:Wallet', $credit, LockMode::PESSIMISTIC_WRITE);
+            $debit = $em->find('AppBundle:Wallet', $debit, LockMode::PESSIMISTIC_WRITE);
+
+            $credit->addAmount(1);
+            $this->persist($credit);
 
             $tx = new Transaction();
-            $tx->setWallet($wallet);
+            $tx->setWallet($credit);
             $tx->setAmount(1);
             $this->persist($tx);
+
+            $debit->addAmount(-1);
+            $this->persist($debit);
+
+            $tx = new Transaction();
+            $tx->setWallet($debit);
+            $tx->setAmount(-1);
+            $this->persist($tx);
+
             $this->flush();
 
             $c->commit();
@@ -45,6 +61,6 @@ class TestController extends Controller
             throw $e;
         }
 
-        return new SingleResource($wallet);
+        return new SingleResource($credit);
     }
 }
