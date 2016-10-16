@@ -33,19 +33,25 @@ class TestController extends Controller
         $c = $em->getConnection();
         $c->beginTransaction();
         try {
-            $credit = $em->find('AppBundle:Wallet', $credit, LockMode::PESSIMISTIC_WRITE);
-            $debit = $em->find('AppBundle:Wallet', $debit, LockMode::PESSIMISTIC_WRITE);
+            $c->executeUpdate("update wallets set amount = amount + ? where id = ?",
+                [1, $credit]
+            );
+            $c->executeUpdate("update wallets set amount = amount - ? where id = ?",
+                [1, $debit]
+            );
+            $credit = $em->find('AppBundle:Wallet', $credit);
+            $debit = $em->find('AppBundle:Wallet', $debit);
 
-            $credit->addAmount(1);
-            $this->persist($credit);
+            // $credit->addAmount(1);
+            // $this->persist($credit);
 
             $tx = new Transaction();
             $tx->setWallet($credit);
             $tx->setAmount(1);
             $this->persist($tx);
 
-            $debit->addAmount(-1);
-            $this->persist($debit);
+            // $debit->addAmount(-1);
+            // $this->persist($debit);
 
             $tx = new Transaction();
             $tx->setWallet($debit);
