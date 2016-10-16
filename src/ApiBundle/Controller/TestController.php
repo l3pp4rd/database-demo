@@ -33,28 +33,45 @@ class TestController extends Controller
         $c = $em->getConnection();
         $c->beginTransaction();
         try {
-            $credit = $em->find('AppBundle:Wallet', $credit, LockMode::PESSIMISTIC_WRITE);
-            $debit = $em->find('AppBundle:Wallet', $debit, LockMode::PESSIMISTIC_WRITE);
 
-            $credit->addAmount(1);
-            $this->persist($credit);
+            $c->beginTransaction();
+            try {
+                $credit = $em->find('AppBundle:Wallet', $credit, LockMode::PESSIMISTIC_WRITE);
 
-            $tx = new Transaction();
-            $tx->setWallet($credit);
-            $tx->setAmount(1);
-            $this->persist($tx);
+                $credit->addAmount(1);
+                $this->persist($credit);
 
-            $debit->addAmount(-1);
-            $this->persist($debit);
+                $tx = new Transaction();
+                $tx->setWallet($credit);
+                $tx->setAmount(1);
+                $this->persist($tx);
+                $this->flush();
+                $c->commit();
+            } catch(Exception $e) {
+                // should retry if deadlock, but ORM manager locks down in failed state
+                $c->rollback();
+                throw $e;
+            }
 
-            $tx = new Transaction();
-            $tx->setWallet($debit);
-            $tx->setAmount(-1);
-            $this->persist($tx);
+            $c->beginTransaction();
+            try {
+                $debit = $em->find('AppBundle:Wallet', $debit, LockMode::PESSIMISTIC_WRITE);
+                $debit->addAmount(-1);
+                $this->persist($debit);
 
-            $this->flush();
+                $tx = new Transaction();
+                $tx->setWallet($debit);
+                $tx->setAmount(-1);
+                $this->persist($tx);
 
-            $c->commit();
+                $this->flush();
+                $c->commit();
+            } catch(Exception $e) {
+                // should retry if deadlock, but ORM manager locks down in failed state
+                $c->rollback();
+                throw $e;
+            }
+
         } catch(Exception $e) {
             // should retry if deadlock, but ORM manager locks down in failed state
             $c->rollback();
