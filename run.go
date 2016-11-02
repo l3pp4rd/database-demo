@@ -5,12 +5,17 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"time"
 )
 
-var concurrency = flag.Int("concurrency", 1, "cuncurrency rate to execute given url")
+var concurrency = flag.Int("concurrency", 10, "cuncurrency rate to execute given url")
 var iterations = flag.Int("iterations", 100, "iterations to execute")
 
 func main() {
+	start := time.Now()
+	defer func() {
+		fmt.Println("took:", time.Since(start))
+	}()
 	flag.Parse()
 
 	uri := flag.Arg(0)
