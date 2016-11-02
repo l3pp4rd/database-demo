@@ -30,22 +30,15 @@ class TestController extends Controller
         $debit = array_values(array_diff($wallets, [$credit]))[mt_rand(0, 2)];
 
         $em = $this->get("doctrine")->getEntityManager();
+        $credit = $this->repo('AppBundle:Wallet')->findOneById($credit);
+        $debit = $this->repo('AppBundle:Wallet')->findOneById($debit);
         $c = $em->getConnection();
         $c->beginTransaction();
         try {
-            $credit = $em->find('AppBundle:Wallet', $credit, LockMode::PESSIMISTIC_WRITE);
-            $debit = $em->find('AppBundle:Wallet', $debit, LockMode::PESSIMISTIC_WRITE);
-
-            $credit->addAmount(1);
-            $this->persist($credit);
-
             $tx = new Transaction();
             $tx->setWallet($credit);
             $tx->setAmount(1);
             $this->persist($tx);
-
-            $debit->addAmount(-1);
-            $this->persist($debit);
 
             $tx = new Transaction();
             $tx->setWallet($debit);
